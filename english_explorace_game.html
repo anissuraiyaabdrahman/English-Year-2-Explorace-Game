@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENGLISH EXPLORACE: THE CONJUNCTION QUEST</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Comic Sans MS', 'Chalkboard SE', 'sans-serif'],
+          },
+          colors: {
+            ocean: { 100: '#e0f2fe', 400: '#38bdf8', 600: '#0284c7', 800: '#075985' },
+            jungle: { 100: '#dcfce7', 400: '#4ade80', 600: '#16a34a', 800: '#166534' },
+            sun: { 100: '#fef3c7', 400: '#facc15', 500: '#eab308', 600: '#ca8a04' },
+            sand: { 100: '#fef3c7', 200: '#fde68a', 400: '#f59e0b' }
+          },
+          animation: {
+            'bounce-slow': 'bounce 2s infinite',
+            'pulse-fast': 'pulse 1s infinite',
+            'wiggle': 'wiggle 0.5s ease-in-out infinite',
+            'float': 'float 3s ease-in-out infinite',
+          },
+          keyframes: {
+            wiggle: {
+              '0%, 100%': { transform: 'rotate(-3deg)' },
+              '50%': { transform: 'rotate(3deg)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap');
+
+    body {
+      font-family: 'Quicksand', 'Inter', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    .font-heading {
+      font-family: 'Fredoka One', cursive;
+    }
+
+    .map-bg {
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 40%, #bfdbfe 100%);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.6) 0%, transparent 20%),
+        radial-gradient(circle at 80% 80%, rgba(254, 243, 199, 0.5) 0%, transparent 25%);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Map Path Line */
+    .path-line {
+      stroke-dasharray: 12, 12;
+      animation: dash 20s linear infinite;
+    }
+
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -240;
+      }
+    }
+
+    /* Confetti Animation */
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #f00;
+      opacity: 0.8;
+      animation: confetti-fall 3s ease-in-out infinite;
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+    }
+
+    /* Star Bounce Effect */
+    .star-pop {
+      animation: starPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes starPop {
+      0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+      70% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+  </style>
+</head>
+
+<body class="h-full map-bg text-slate-800 flex flex-col justify-between overflow-x-hidden min-h-screen">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white/80 backdrop-blur-md border-b-4 border-amber-400 sticky top-0 z-30 px-4 py-3 shadow-md">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-2">
+      <!-- Title & Avatar -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-400 border-2 border-amber-600 flex items-center justify-center text-2xl shadow-inner animate-float">
+          🤠
+        </div>
+        <div>
+          <h1 class="font-heading text-lg md:text-xl text-sky-900 tracking-wide leading-tight">ENGLISH EXPLORACE</h1>
+          <p id="player-display-name" class="text-xs md:text-sm font-bold text-amber-600 truncate max-w-[120px] md:max-w-[200px]">Explorer</p>
+        </div>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="flex items-center gap-2 md:gap-4">
+        <!-- Stars Count -->
+        <div class="bg-amber-100 border-2 border-amber-400 rounded-2xl px-3 py-1 flex items-center gap-1.5 shadow-sm">
+          <span class="text-xl md:text-2xl animate-pulse">⭐</span>
+          <span id="star-count" class="font-heading text-lg md:text-xl text-amber-800">0</span>
+        </div>
+
+        <!-- Badges Count -->
+        <div class="bg-emerald-100 border-2 border-emerald-400 rounded-2xl px-3 py-1 flex items-center gap-1.5 shadow-sm hidden sm:flex">
+          <span class="text-xl md:text-2xl">🏅</span>
+          <span id="badge-count" class="font-heading text-lg md:text-xl text-emerald-800">0/6</span>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <button id="btn-map" onclick="switchView('map')" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-1.5 px-3 md:px-4 rounded-xl shadow-md border-b-4 border-sky-700 active:border-b-0 active:translate-y-1 transition flex items-center gap-1 text-sm md:text-base">
+          🗺️ <span class="hidden md:inline">Map</span>
+        </button>
+        <button id="btn-restart" onclick="confirmReset()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-1.5 px-2.5 rounded-xl shadow-md border-b-4 border-rose-700 active:border-b-0 active:translate-y-1 transition text-xs md:text-sm" title="Reset Game">
+          🔄
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-5xl w-full mx-auto p-4 flex flex-col justify-center">
+
+    <!-- ================= VIEW 1: WELCOME / START SCREEN ================= -->
+    <section id="view-welcome" class="glass-card rounded-3xl p-6 md:p-10 border-4 border-sky-300 text-center max-w-2xl mx-auto my-auto shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-200/50 rounded-full blur-xl pointer-events-none"></div>
+      
+      <div class="text-5xl md:text-6xl mb-4 animate-bounce-slow">🏝️🧭✨</div>
+      <h2 class="font-heading text-3xl md:text-5xl text-sky-900 mb-2 leading-tight">THE CONJUNCTION QUEST</h2>
+      <p class="text-sky-700 font-medium text-base md:text-lg mb-6">Year 2 English Explorace Adventure</p>
+
+      <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mb-6 text-left space-y-2 text-sm md:text-base text-slate-700">
+        <p class="font-bold text-amber-900 flex items-center gap-2 text-base">
+          🎯 How to Play:
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-600">
+          <li>Listen carefully to English sentences 🔊</li>
+          <li>Practice writing and connecting sentences using <strong class="text-indigo-600">AND</strong> and <strong class="text-rose-600">BUT</strong>.</li>
+          <li>Collect stars ⭐ and unlock all 6 secret stages!</li>
+          <li>Reach the Treasure Island to open the final chest 🏆</li>
+        </ul>
+      </div>
+
+      <!-- Player Name Input Form -->
+      <div class="mb-8 text-left">
+        <label for="input-player-name" class="block text-sm font-bold text-sky-900 mb-2">Enter Your Explorer Name:</label>
+        <input type="text" id="input-player-name" placeholder="e.g. Alex" maxlength="15" 
+          class="w-full px-4 py-3 text-lg rounded-2xl border-2 border-sky-300 focus:border-sky-500 focus:outline-none shadow-inner font-bold text-sky-900">
+      </div>
+
+      <button onclick="startGame()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-heading text-2xl py-4 px-8 rounded-2xl shadow-xl border-b-8 border-emerald-700 active:border-b-0 active:translate-y-2 transition-all transform hover:scale-105 flex items-center justify-center gap-3">
+        <span>🚀 START EXPLORACE</span>
+      </button>
+    </section>
+
+
+    <!-- ================= VIEW 2: ADVENTURE MAP VIEW ================= -->
+    <section id="view-map" class="hidden my-auto py-4">
+      <div class="text-center mb-6">
+        <h2 class="font-heading text-2xl md:text-4xl text-sky-900 drop-shadow-sm">EXPLORACE MAP</h2>
+        <p class="text-sky-700 text-sm md:text-base font-bold">Complete each stage to unlock the next location!</p>
+      </div>
+
+      <!-- Map Container with Visual Nodes -->
+      <div class="relative max-w-xl mx-auto p-4 md:p-8 bg-white/70 backdrop-blur-md rounded-3xl border-4 border-sky-200 shadow-xl">
+        <!-- Connecting SVG Path -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 400 600" preserveAspectRatio="none">
+          <path d="M 80 520 Q 200 480 320 440 T 80 340 T 320 240 T 80 140 T 200 60" fill="none" stroke="#38bdf8" stroke-width="8" class="path-line" stroke-linecap="round" />
+        </svg>
+
+        <div class="relative z-10 grid grid-cols-1 gap-8 py-2" id="map-nodes-container">
+          <!-- Dynamically populated map nodes -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= VIEW 3: STAGE GAMEPLAY VIEW ================= -->
+    <section id="view-stage" class="hidden my-auto max-w-3xl mx-auto w-full">
+      <div class="glass-card rounded-3xl p-5 md:p-8 border-4 border-sky-300 shadow-2xl relative">
+        
+        <!-- Stage Title Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-center pb-4 mb-4 border-b-2 border-sky-100 gap-2">
+          <div>
+            <span id="stage-badge-num" class="bg-amber-400 text-amber-950 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Stage 1</span>
+            <h2 id="stage-title" class="font-heading text-2xl md:text-3xl text-sky-900 mt-1">The Listening Beach</h2>
+          </div>
+          <!-- Question Progress counter -->
+          <div class="bg-sky-100 text-sky-800 rounded-2xl px-4 py-1.5 font-bold text-sm md:text-base border border-sky-200 flex items-center gap-2">
+            <span>Question:</span>
+            <span id="question-progress-text" class="text-amber-600 font-heading text-lg">1 / 4</span>
+          </div>
+        </div>
+
+        <!-- Stage Instruction Banner -->
+        <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
+          <span class="text-3xl">💡</span>
+          <div>
+            <h3 class="font-bold text-sky-900 text-sm md:text-base">Instruction:</h3>
+            <p id="stage-instruction" class="text-slate-700 text-sm md:text-base">Listen carefully and write the sentence.</p>
+          </div>
+        </div>
+
+        <!-- Contextual Hint Banner (If available) -->
+        <div id="stage-hint-box" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 mb-6 text-amber-800 text-xs md:text-sm flex items-center gap-2">
+          <span>📢 <strong>Tip:</strong></span>
+          <span id="stage-hint-text">AND joins ideas that go together.</span>
+        </div>
+
+        <!-- Interactive Question Body -->
+        <div id="question-content-box" class="min-h-[180px] flex flex-col justify-center items-center py-2">
+          <!-- Rendered dynamically per question type -->
+        </div>
+
+        <!-- Dynamic Feedback Message -->
+        <div id="feedback-msg" class="min-h-[48px] my-3 rounded-2xl p-3 text-center font-bold text-sm md:text-base transition-all duration-300 opacity-0 transform scale-95 flex items-center justify-center gap-2">
+          <!-- Text feedback pops up here -->
+        </div>
+
+        <!-- Stage Control Buttons Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t-2 border-sky-100">
+          <button onclick="switchView('map')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-4 rounded-2xl shadow border-b-4 border-slate-400 active:border-b-0 active:translate-y-1 transition text-sm">
+            ⬅️ Back to Map
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button id="btn-clear" onclick="clearCurrentInput()" class="bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold py-2.5 px-4 rounded-2xl shadow border-b-4 border-amber-400 active:border-b-0 active:translate-y-1 transition text-sm hidden">
+              🧹 Clear
+            </button>
+            <button id="btn-check" onclick="checkCurrentAnswer()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-heading text-lg py-2.5 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition flex items-center gap-2">
+              <span>Check Answer ✅</span>
+            </button>
+            <button id="btn-next" onclick="nextQuestion()" class="bg-sky-500 hover:bg-sky-600 text-white font-heading text-lg py-2.5 px-6 rounded-2xl shadow-lg border-b-4 border-sky-700 active:border-b-0 active:translate-y-1 transition hidden flex items-center gap-2">
+              <span>Next ➡️</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ================= VIEW 4: FINAL VICTORY SCREEN ================= -->
+    <section id="view-victory" class="hidden my-auto max-w-2xl mx-auto w-full text-center">
+      <div class="glass-card rounded-3xl p-6 md:p-10 border-4 border-amber-400 shadow-2xl relative overflow-hidden">
+        
+        <!-- Confetti Overlay Container -->
+        <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+        <div class="text-6xl md:text-7xl mb-4 animate-bounce">🏆</div>
+        <h2 class="font-heading text-2xl md:text-4xl text-amber-800 leading-tight mb-2">CONGRATULATIONS, ENGLISH EXPLORACE CHAMPION!</h2>
+        <p id="victory-player-text" class="text-xl font-bold text-sky-900 mb-6">Great job, Explorer!</p>
+
+        <!-- Animated Treasure Chest Card -->
+        <div class="bg-amber-100/80 border-2 border-amber-300 rounded-3xl p-6 mb-6 shadow-inner flex flex-col items-center">
+          <div id="chest-icon" class="text-7xl md:text-8xl mb-3 transition-transform duration-500 hover:scale-110 cursor-pointer" onclick="triggerChestAnimation()">
+            🎁
+          </div>
+          <p id="chest-label" class="font-heading text-amber-900 text-xl mb-2">The Treasure Chest is Unlocked!</p>
+          <p class="text-sm md:text-base text-slate-700 max-w-md">
+            You have completed all six stages! You listened carefully, wrote sentences, and used <strong>AND</strong> and <strong>BUT</strong> correctly. You are a fantastic English explorer!
+          </p>
+        </div>
+
+        <!-- Stats Summary Card -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+          <div class="bg-white rounded-2xl p-4 border-2 border-amber-200 shadow-sm">
+            <span class="text-3xl">⭐</span>
+            <div id="victory-stars" class="font-heading text-2xl text-amber-700 mt-1">24</div>
+            <div class="text-xs text-slate-500 font-bold uppercase">Total Stars</div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border-2 border-emerald-200 shadow-sm">
+            <span class="text-3xl">🎖️</span>
+            <div id="victory-stages" class="font-heading text-2xl text-emerald-700 mt-1">6 / 6</div>
+            <div class="text-xs text-slate-500 font-bold uppercase">Stages Completed</div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <button onclick="switchView('map')" class="bg-sky-500 hover:bg-sky-600 text-white font-heading text-lg py-3 px-6 rounded-2xl shadow-lg border-b-4 border-sky-700 active:border-b-0 active:translate-y-1 transition">
+            🗺️ BACK TO MAP
+          </button>
+          <button onclick="confirmReset()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-heading text-lg py-3 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition">
+            🔄 PLAY AGAIN
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Stage Unlocked Modal Popup -->
+  <div id="modal-unlock" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-3xl p-6 md:p-8 max-w-md w-full text-center border-4 border-amber-400 shadow-2xl animate-float">
+      <div class="text-6xl mb-3">🎉</div>
+      <h3 class="font-heading text-2xl md:text-3xl text-sky-900 mb-2">Stage Complete!</h3>
+      <p id="modal-unlock-text" class="text-slate-700 font-bold mb-6 text-base md:text-lg">
+        🎉 Amazing! You unlocked the next stage!
+      </p>
+      <button onclick="closeUnlockModal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-heading text-xl py-3 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1 transition">
+        Continue Adventure 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- Custom Confirmation Modal (Replaces browser confirm) -->
+  <div id="modal-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-3xl p-6 max-w-sm w-full text-center border-4 border-rose-300 shadow-2xl">
+      <div class="text-5xl mb-3">⚠️</div>
+      <h3 class="font-heading text-2xl text-slate-800 mb-2">Reset Progress?</h3>
+      <p class="text-slate-600 text-sm mb-6">Are you sure you want to restart your adventure? All stars and stage progress will be cleared.</p>
+      <div class="flex gap-3">
+        <button onclick="closeConfirmModal(false)" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl border-b-4 border-slate-400 active:border-b-0">
+          Cancel
+        </button>
+        <button onclick="closeConfirmModal(true)" class="w-1/2 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl border-b-4 border-rose-700 active:border-b-0">
+          Reset All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-3 text-xs font-bold text-sky-800 bg-white/40">
+    English Explorace: The Conjunction Quest • Primary School Year 2 English
+  </footer>
+
+  <!-- ================= JAVASCRIPT GAME LOGIC ================= -->
+  <script>
+    
+    // Application State Object
+    const state = {
+      playerName: "Explorer",
+      stars: 0,
+      currentStageIndex: 0, // 0 to 5
+      currentQuestionIndex: 0,
+      completedStages: [false, false, false, false, false, false],
+      unlockedStages: [true, false, false, false, false, false], // Stage 1 unlocked by default
+      answeredQuestions: {}, // Key: 's1_q0' -> boolean
+      userSelectedOption: null
+    };
+
+    // Stage Data Configuration
+    const STAGES_DATA = [
+      {
+        id: 1,
+        title: "The Listening Beach",
+        icon: "🏖️",
+        skill: "Listening and Writing",
+        instruction: "Listen carefully and write the sentence.",
+        hint: "Type exactly what you hear. Mind your spelling!",
+        questions: [
+          { type: 'tts_write', promptText: "I like to play.", correct: "I like to play" },
+          { type: 'tts_write', promptText: "The sun is hot.", correct: "The sun is hot" },
+          { type: 'tts_write', promptText: "I have a red ball.", correct: "I have a red ball" },
+          { type: 'tts_write', promptText: "We go to the beach.", correct: "We go to the beach" }
+        ]
+      },
+      {
+        id: 2,
+        title: "The Conjunction Bridge",
+        icon: "🌉",
+        skill: "Coordinating Conjunctions: AND and BUT",
+        instruction: "Choose the correct conjunction to complete each sentence.",
+        hint: "AND joins similar ideas. BUT joins different or opposite ideas.",
+        questions: [
+          { type: 'mcq', sentenceBefore: "I have a pencil", sentenceAfter: "a ruler.", options: ["and", "but"], correct: "and" },
+          { type: 'mcq', sentenceBefore: "The bag is small", sentenceAfter: "heavy.", options: ["and", "but"], correct: "but" },
+          { type: 'mcq', sentenceBefore: "Ali likes apples", sentenceAfter: "bananas.", options: ["and", "but"], correct: "and" },
+          { type: 'mcq', sentenceBefore: "It is sunny", sentenceAfter: "it is cold.", options: ["and", "but"], correct: "but" },
+          { type: 'mcq', sentenceBefore: "Sara can sing", sentenceAfter: "dance.", options: ["and", "but"], correct: "and" }
+        ]
+      },
+      {
+        id: 3,
+        title: "The Jungle Sentence Trail",
+        icon: "🌴",
+        skill: "Listening, Writing and AND",
+        instruction: "Listen to the sentence. Write it down and continue it using AND.",
+        hint: "AND joins ideas that go together.",
+        questions: [
+          { type: 'tts_continue', promptText: "I like cats.", requiredWord: "and", baseText: "i like cats" },
+          { type: 'tts_continue', promptText: "She has a book.", requiredWord: "and", baseText: "she has a book" },
+          { type: 'tts_continue', promptText: "We play football.", requiredWord: "and", baseText: "we play football" },
+          { type: 'tts_continue', promptText: "He eats rice.", requiredWord: "and", baseText: "he eats rice" }
+        ]
+      },
+      {
+        id: 4,
+        title: "The Mystery Cave",
+        icon: "🦇",
+        skill: "Listening, Writing and BUT",
+        instruction: "Listen carefully. Write the sentence and continue it using BUT.",
+        hint: "BUT joins ideas that are different or contrast with each other.",
+        questions: [
+          { type: 'tts_continue', promptText: "The cat is small.", requiredWord: "but", baseText: "the cat is small" },
+          { type: 'tts_continue', promptText: "The bag is pretty.", requiredWord: "but", baseText: "the bag is pretty" },
+          { type: 'tts_continue', promptText: "I am tired.", requiredWord: "but", baseText: "i am tired" },
+          { type: 'tts_continue', promptText: "The weather is sunny.", requiredWord: "but", baseText: "the weather is sunny" }
+        ]
+      },
+      {
+        id: 5,
+        title: "The Explorer's Challenge",
+        icon: "🧭",
+        skill: "Choosing AND or BUT",
+        instruction: "Choose AND or BUT to complete each sentence correctly.",
+        hint: "Think carefully about how the two parts of the sentence connect!",
+        questions: [
+          { type: 'mcq', sentenceBefore: "I have a ruler", sentenceAfter: "an eraser.", options: ["and", "but"], correct: "and" },
+          { type: 'mcq', sentenceBefore: "The boy is young", sentenceAfter: "strong.", options: ["and", "but"], correct: "but" },
+          { type: 'mcq', sentenceBefore: "She likes singing", sentenceAfter: "dancing.", options: ["and", "but"], correct: "and" },
+          { type: 'mcq', sentenceBefore: "The box is small", sentenceAfter: "heavy.", options: ["and", "but"], correct: "but" },
+          { type: 'mcq', sentenceBefore: "I like ice cream", sentenceAfter: "cake.", options: ["and", "but"], correct: "and" }
+        ]
+      },
+      {
+        id: 6,
+        title: "The Treasure Island",
+        icon: "🏴‍☠️",
+        skill: "Final Challenge — Listening, Writing, AND and BUT",
+        instruction: "Complete all six final challenges to win the grand treasure!",
+        hint: "Use everything you have learned!",
+        questions: [
+          // 2 Listening & Writing
+          { type: 'tts_write', promptText: "The boy has a kite.", correct: "The boy has a kite" },
+          { type: 'tts_write', promptText: "The girl likes to read.", correct: "The girl likes to read" },
+          // 2 Conjunction selection
+          { type: 'mcq', sentenceBefore: "I like milk", sentenceAfter: "juice.", options: ["and", "but"], correct: "and" },
+          { type: 'mcq', sentenceBefore: "The toy is old", sentenceAfter: "useful.", options: ["and", "but"], correct: "but" },
+          // 2 Sentence continuation
+          { type: 'fill_continue', basePrefix: "I have a pen and", conjunction: "and", acceptedWords: ["pencil", "eraser", "ruler", "book", "paper", "bag"] },
+          { type: 'fill_continue', basePrefix: "I am small but", conjunction: "but", acceptedWords: ["strong", "happy", "brave", "fast", "smart", "tall"] }
+        ]
+      }
+    ];
+
+
+    // Simple Web Audio Sound Synthesizer for instant audio feedback without external assets
+    function playAudioFx(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+
+        if (type === 'correct') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+          osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, now); // A3
+          osc.frequency.linearRampToValueAtTime(174.61, now + 0.2); // F3
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'unlock') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+          osc.start(now);
+          osc.stop(now + 0.5);
+        }
+      } catch (e) {
+        // Fallback silently if web audio is restricted
+      }
+    }
+
+    // Web Speech Synthesis API function
+    function speakSentence(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Cancel active speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.85; // Slightly slower for Year 2 pupils
+        utterance.pitch = 1.1; // Friendly tone
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+
+    // Normalizes input text for comparison (lowercasing, trim trailing punctuation, collapse spaces)
+    function normalizeText(str) {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .trim()
+        .replace(/[.,?!]+$/g, '') // remove trailing punctuation
+        .replace(/\s+/g, ' ');     // collapse multiple spaces
+    }
+
+    // Evaluates sentence continuation for AND (Stage 3) and BUT (Stage 4)
+    function validateContinuation(userInput, baseText, requiredConjunction) {
+      const normInput = normalizeText(userInput);
+      const normBase = normalizeText(baseText);
+      const conj = requiredConjunction.toLowerCase();
+
+      // Rule 1: Must start with base sentence
+      if (!normInput.startsWith(normBase)) {
+        return { valid: false, reason: `Make sure your sentence starts with "${baseText}"!` };
+      }
+
+      // Rule 2: Must contain required conjunction with spaces
+      const conjPattern = new RegExp(`\\b${conj}\\b`, 'i');
+      if (!conjPattern.test(normInput)) {
+        return { valid: false, reason: `Don't forget to use the word "${conj.toUpperCase()}"!` };
+      }
+
+      // Rule 3: Must have text after conjunction
+      const parts = normInput.split(new RegExp(`\\b${conj}\\b`, 'i'));
+      if (parts.length < 2 || parts[1].trim().length < 2) {
+        return { valid: false, reason: `Please complete the sentence after "${conj.toUpperCase()}"!` };
+      }
+
+      return { valid: true };
+    }
+
+
+
+    function saveState() {
+      try {
+        localStorage.setItem('explorace_year2_state', JSON.stringify(state));
+      } catch (e) {
+        // LocalStorage fallback
+      }
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('explorace_year2_state');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          Object.assign(state, parsed);
+        }
+      } catch (e) {
+        // Ignore load error
+      }
+      updateTopHeader();
+    }
+
+    function updateTopHeader() {
+      document.getElementById('player-display-name').innerText = state.playerName || 'Explorer';
+      document.getElementById('star-count').innerText = state.stars;
+      
+      const badgeCount = state.completedStages.filter(Boolean).length;
+      document.getElementById('badge-count').innerText = `${badgeCount}/6`;
+    }
+
+
+
+    function switchView(viewName) {
+      document.getElementById('view-welcome').classList.add('hidden');
+      document.getElementById('view-map').classList.add('hidden');
+      document.getElementById('view-stage').classList.add('hidden');
+      document.getElementById('view-victory').classList.add('hidden');
+
+      if (viewName === 'welcome') {
+        document.getElementById('view-welcome').classList.remove('hidden');
+      } else if (viewName === 'map') {
+        renderMapNodes();
+        document.getElementById('view-map').classList.remove('hidden');
+      } else if (viewName === 'stage') {
+        document.getElementById('view-stage').classList.remove('hidden');
+        renderCurrentQuestion();
+      } else if (viewName === 'victory') {
+        renderVictoryScreen();
+        document.getElementById('view-victory').classList.remove('hidden');
+      }
+
+      updateTopHeader();
+    }
+
+    function startGame() {
+      const input = document.getElementById('input-player-name');
+      if (input.value.trim() !== '') {
+        state.playerName = input.value.trim();
+      } else {
+        state.playerName = 'Explorer';
+      }
+      saveState();
+      switchView('map');
+    }
+
+
+
+    function renderMapNodes() {
+      const container = document.getElementById('map-nodes-container');
+      container.innerHTML = '';
+
+      STAGES_DATA.forEach((stage, idx) => {
+        const isUnlocked = state.unlockedStages[idx];
+        const isCompleted = state.completedStages[idx];
+
+        let statusBadge = '';
+        let iconSymbol = '🔒';
+        let cardBgClass = 'bg-slate-100 border-slate-300 opacity-80';
+
+        if (isCompleted) {
+          statusBadge = '<span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full border border-amber-300">⭐ Completed</span>';
+          iconSymbol = '⭐';
+          cardBgClass = 'bg-emerald-50 border-emerald-300 hover:border-emerald-400 shadow-md';
+        } else if (isUnlocked) {
+          statusBadge = '<span class="bg-sky-100 text-sky-800 text-xs font-bold px-2 py-0.5 rounded-full border border-sky-300 animate-pulse">🟡 In Progress</span>';
+          iconSymbol = stage.icon;
+          cardBgClass = 'bg-white border-sky-400 hover:border-sky-500 shadow-lg transform hover:-translate-y-1';
+        }
+
+        if (idx === 5 && isCompleted) {
+          iconSymbol = '🏆';
+        }
+
+        const nodeEl = document.createElement('div');
+        nodeEl.className = `p-4 rounded-2xl border-4 transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer ${cardBgClass}`;
+        
+        nodeEl.innerHTML = `
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-3xl shadow-inner">
+              ${iconSymbol}
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Stage ${stage.id}</span>
+                ${statusBadge}
+              </div>
+              <h3 class="font-heading text-lg md:text-xl text-sky-950">${stage.title}</h3>
+              <p class="text-xs md:text-sm text-slate-600 font-medium">${stage.skill}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            ${isUnlocked 
+              ? `<button class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-xl text-sm shadow border-b-4 border-sky-700">Play ▶</button>`
+              : `<span class="text-2xl" title="Locked Stage">🔒</span>`
+            }
+          </div>
+        `;
+
+        if (isUnlocked) {
+          nodeEl.onclick = () => openStage(idx);
+        } else {
+          nodeEl.onclick = () => {
+            playAudioFx('wrong');
+            showFeedback('🔒 Complete the previous stage first to unlock!', false);
+          };
+        }
+
+        container.appendChild(nodeEl);
+      });
+    }
+
+    function openStage(stageIdx) {
+      if (!state.unlockedStages[stageIdx]) return;
+      state.currentStageIndex = stageIdx;
+      state.currentQuestionIndex = 0;
+      state.userSelectedOption = null;
+      switchView('stage');
+    }
+
+
+
+    function renderCurrentQuestion() {
+      const stage = STAGES_DATA[state.currentStageIndex];
+      const qIndex = state.currentQuestionIndex;
+      const qData = stage.questions[qIndex];
+
+      // Reset UI elements
+      document.getElementById('stage-badge-num').innerText = `STAGE ${stage.id}`;
+      document.getElementById('stage-title').innerText = stage.title;
+      document.getElementById('stage-instruction').innerText = stage.instruction;
+      
+      // Progress text
+      document.getElementById('question-progress-text').innerText = `${qIndex + 1} / ${stage.questions.length}`;
+
+      // Hint display
+      const hintBox = document.getElementById('stage-hint-box');
+      if (stage.hint) {
+        hintBox.classList.remove('hidden');
+        document.getElementById('stage-hint-text').innerText = stage.hint;
+      } else {
+        hintBox.classList.add('hidden');
+      }
+
+      // Reset feedback message
+      hideFeedback();
+
+      // Button controls setup
+      document.getElementById('btn-check').classList.remove('hidden');
+      document.getElementById('btn-next').classList.add('hidden');
+      document.getElementById('btn-clear').classList.add('hidden');
+
+      const box = document.getElementById('question-content-box');
+      box.innerHTML = '';
+      state.userSelectedOption = null;
+
+      // Render by Question Type
+      if (qData.type === 'tts_write') {
+        document.getElementById('btn-clear').classList.remove('hidden');
+        box.innerHTML = `
+          <div class="flex flex-col items-center gap-4 w-full max-w-md">
+            <div class="flex items-center gap-3">
+              <button onclick="speakSentence('${qData.promptText}')" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-heading text-lg py-3 px-6 rounded-2xl shadow-lg border-b-4 border-amber-600 active:border-b-0 active:translate-y-1 transition flex items-center gap-2">
+                <span>🔊 Listen</span>
+              </button>
+              <button onclick="speakSentence('${qData.promptText}')" class="bg-sky-200 hover:bg-sky-300 text-sky-900 font-bold py-3 px-4 rounded-2xl shadow border-b-4 border-sky-400 active:border-b-0 active:translate-y-1 transition text-sm">
+                🔁 Listen Again
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 font-bold">Listen to the audio and write the exact sentence below:</p>
+            <input type="text" id="answer-input" placeholder="Type sentence here..." autofocus autocomplete="off"
+              class="w-full text-center px-4 py-3 text-lg font-bold rounded-2xl border-2 border-sky-300 focus:border-sky-500 focus:outline-none shadow-inner">
+          </div>
+        `;
+        // Auto play audio on render
+        setTimeout(() => speakSentence(qData.promptText), 300);
+
+      } else if (qData.type === 'mcq') {
+        box.innerHTML = `
+          <div class="flex flex-col items-center gap-6 w-full max-w-lg">
+            <p class="text-xl md:text-2xl font-bold text-sky-900 text-center bg-sky-50 px-6 py-4 rounded-2xl border border-sky-200 w-full shadow-inner">
+              "${qData.sentenceBefore} <span id="mcq-blank" class="text-amber-600 underline font-heading px-2">___</span> ${qData.sentenceAfter}"
+            </p>
+            <div class="flex justify-center gap-4 w-full">
+              ${qData.options.map(opt => `
+                <button onclick="selectMcqOption('${opt}', this)" class="mcq-opt-btn w-1/2 bg-white hover:bg-amber-50 border-4 border-amber-300 font-heading text-2xl text-amber-900 py-4 rounded-2xl shadow-md transition active:scale-95">
+                  ${opt.toUpperCase()}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+
+      } else if (qData.type === 'tts_continue') {
+        document.getElementById('btn-clear').classList.remove('hidden');
+        box.innerHTML = `
+          <div class="flex flex-col items-center gap-4 w-full max-w-lg">
+            <div class="flex items-center gap-3">
+              <button onclick="speakSentence('${qData.promptText}')" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-heading text-lg py-3 px-6 rounded-2xl shadow-lg border-b-4 border-amber-600 active:border-b-0 active:translate-y-1 transition flex items-center gap-2">
+                <span>🔊 Listen Prompt</span>
+              </button>
+              <button onclick="speakSentence('${qData.promptText}')" class="bg-sky-200 hover:bg-sky-300 text-sky-900 font-bold py-3 px-4 rounded-2xl shadow border-b-4 border-sky-400 active:border-b-0 active:translate-y-1 transition text-sm">
+                🔁 Repeat
+              </button>
+            </div>
+            <p class="text-sm text-sky-800 font-bold">Write sentence starting with: <span class="bg-amber-100 px-2 py-1 rounded border border-amber-300 text-amber-900">"${qData.promptText}"</span> ... and continue using <strong>${qData.requiredWord.toUpperCase()}</strong></p>
+            <textarea id="answer-input" rows="2" placeholder="e.g. ${qData.promptText} ${qData.requiredWord}..." 
+              class="w-full px-4 py-3 text-base md:text-lg font-bold rounded-2xl border-2 border-sky-300 focus:border-sky-500 focus:outline-none shadow-inner resize-none"></textarea>
+          </div>
+        `;
+        setTimeout(() => speakSentence(qData.promptText), 300);
+
+      } else if (qData.type === 'fill_continue') {
+        document.getElementById('btn-clear').classList.remove('hidden');
+        box.innerHTML = `
+          <div class="flex flex-col items-center gap-4 w-full max-w-lg">
+            <p class="text-xl font-bold text-sky-900 text-center bg-amber-50 p-4 rounded-2xl border border-amber-200 w-full">
+              Sentence start: "<span class="text-amber-800 font-heading">${qData.basePrefix}</span> ..."
+            </p>
+            <p class="text-xs text-slate-500 font-bold">Complete the sentence naturally:</p>
+            <input type="text" id="answer-input" placeholder="e.g. ${qData.acceptedWords[0]}" autofocus autocomplete="off"
+              class="w-full text-center px-4 py-3 text-lg font-bold rounded-2xl border-2 border-sky-300 focus:border-sky-500 focus:outline-none shadow-inner">
+          </div>
+        `;
+      }
+    }
+
+    function selectMcqOption(optionValue, btnElem) {
+      state.userSelectedOption = optionValue;
+      document.querySelectorAll('.mcq-opt-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-400', 'text-amber-950', 'border-amber-600', 'scale-105');
+        btn.classList.add('bg-white', 'text-amber-900', 'border-amber-300');
+      });
+      btnElem.classList.remove('bg-white', 'border-amber-300');
+      btnElem.classList.add('bg-amber-400', 'text-amber-950', 'border-amber-600', 'scale-105');
+
+      const blank = document.getElementById('mcq-blank');
+      if (blank) blank.innerText = optionValue.toUpperCase();
+    }
+
+    function clearCurrentInput() {
+      const input = document.getElementById('answer-input');
+      if (input) input.value = '';
+    }
+
+
+
+    function checkCurrentAnswer() {
+      const stageIdx = state.currentStageIndex;
+      const qIndex = state.currentQuestionIndex;
+      const qData = STAGES_DATA[stageIdx].questions[qIndex];
+      const questionKey = `s${stageIdx}_q${qIndex}`;
+
+      let isCorrect = false;
+      let feedbackText = "";
+
+      if (qData.type === 'tts_write') {
+        const inputVal = document.getElementById('answer-input')?.value || "";
+        if (normalizeText(inputVal) === normalizeText(qData.correct)) {
+          isCorrect = true;
+          feedbackText = "🎉 Correct! You listened and wrote perfectly!";
+        } else {
+          feedbackText = "Not quite! Listen again and try once more.";
+        }
+
+      } else if (qData.type === 'mcq') {
+        if (!state.userSelectedOption) {
+          showFeedback("⚠️ Please select an option first!", false);
+          return;
+        }
+        if (state.userSelectedOption.toLowerCase() === qData.correct.toLowerCase()) {
+          isCorrect = true;
+          feedbackText = "Correct! You have found the right conjunction! ✨";
+        } else {
+          feedbackText = "Try again! Think about how the ideas are connected.";
+        }
+
+      } else if (qData.type === 'tts_continue') {
+        const inputVal = document.getElementById('answer-input')?.value || "";
+        const result = validateContinuation(inputVal, qData.baseText, qData.requiredWord);
+        if (result.valid) {
+          isCorrect = true;
+          feedbackText = "Fantastic! Great sentence continuation!";
+        } else {
+          feedbackText = result.reason || "Try again! Check your sentence carefully.";
+        }
+
+      } else if (qData.type === 'fill_continue') {
+        const inputVal = normalizeText(document.getElementById('answer-input')?.value || "");
+        if (!inputVal) {
+          showFeedback("⚠️ Please write an ending for the sentence!", false);
+          return;
+        }
+        // Match if pupil wrote one of accepted words or a valid word string
+        const hasAcceptedWord = qData.acceptedWords.some(w => inputVal.includes(w));
+        if (hasAcceptedWord || inputVal.length >= 3) {
+          isCorrect = true;
+          feedbackText = "Awesome writing! That makes total sense! ⭐";
+        } else {
+          feedbackText = "Not quite! Try adding a clearer word at the end.";
+        }
+      }
+
+      // Handle Result Outcome
+      if (isCorrect) {
+        playAudioFx('correct');
+        showFeedback(feedbackText, true);
+
+        // Award Star if not previously answered
+        if (!state.answeredQuestions[questionKey]) {
+          state.answeredQuestions[questionKey] = true;
+          state.stars += 1;
+          saveState();
+          updateTopHeader();
+        }
+
+        // Toggle buttons
+        document.getElementById('btn-check').classList.add('hidden');
+        document.getElementById('btn-next').classList.remove('hidden');
+
+      } else {
+        playAudioFx('wrong');
+        showFeedback(feedbackText, false);
+      }
+    }
+
+    function showFeedback(msg, isSuccess) {
+      const fb = document.getElementById('feedback-msg');
+      fb.innerText = msg;
+      fb.classList.remove('opacity-0', 'scale-95', 'bg-emerald-100', 'text-emerald-900', 'border-emerald-300', 'bg-rose-100', 'text-rose-900', 'border-rose-300');
+      
+      if (isSuccess) {
+        fb.classList.add('bg-emerald-100', 'text-emerald-900', 'border-2', 'border-emerald-300', 'opacity-100', 'scale-100');
+      } else {
+        fb.classList.add('bg-rose-100', 'text-rose-900', 'border-2', 'border-rose-300', 'opacity-100', 'scale-100');
+      }
+    }
+
+    function hideFeedback() {
+      const fb = document.getElementById('feedback-msg');
+      fb.classList.add('opacity-0', 'scale-95');
+    }
+
+
+
+    function nextQuestion() {
+      const stageIdx = state.currentStageIndex;
+      const stage = STAGES_DATA[stageIdx];
+
+      if (state.currentQuestionIndex < stage.questions.length - 1) {
+        state.currentQuestionIndex++;
+        renderCurrentQuestion();
+      } else {
+        // All questions in stage complete!
+        handleStageCompletion(stageIdx);
+      }
+    }
+
+    function handleStageCompletion(stageIdx) {
+      state.completedStages[stageIdx] = true;
+
+      // Unlock next stage if exists
+      if (stageIdx + 1 < STAGES_DATA.length) {
+        state.unlockedStages[stageIdx + 1] = true;
+        saveState();
+        playAudioFx('unlock');
+        
+        // Show stage unlock modal popup
+        document.getElementById('modal-unlock-text').innerText = `🎉 Amazing! You completed Stage ${stageIdx + 1} and unlocked Stage ${stageIdx + 2}!`;
+        document.getElementById('modal-unlock').classList.remove('hidden');
+      } else {
+        // Completed Stage 6 -> VICTORY!
+        saveState();
+        switchView('victory');
+      }
+    }
+
+    function closeUnlockModal() {
+      document.getElementById('modal-unlock').classList.add('hidden');
+      switchView('map');
+    }
+
+
+
+    function renderVictoryScreen() {
+      playAudioFx('unlock');
+      document.getElementById('victory-player-text').innerText = `Outstanding job, Explorer ${state.playerName}!`;
+      document.getElementById('victory-stars').innerText = state.stars;
+      
+      const count = state.completedStages.filter(Boolean).length;
+      document.getElementById('victory-stages').innerText = `${count} / 6`;
+
+      // Render mini confetti
+      const container = document.getElementById('confetti-container');
+      container.innerHTML = '';
+      for (let i = 0; i < 30; i++) {
+        const conf = document.createElement('div');
+        conf.className = 'confetti';
+        conf.style.left = `${Math.random() * 100}%`;
+        conf.style.backgroundColor = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6'][Math.floor(Math.random() * 5)];
+        conf.style.animationDelay = `${Math.random() * 2}s`;
+        container.appendChild(conf);
+      }
+    }
+
+    function triggerChestAnimation() {
+      const chest = document.getElementById('chest-icon');
+      chest.innerText = '💎👑✨';
+      playAudioFx('unlock');
+      document.getElementById('chest-label').innerText = '🎉 Grand Explorer Treasure Claimed!';
+    }
+
+    // Modal Confirmation Dialogs
+    function confirmReset() {
+      document.getElementById('modal-confirm').classList.remove('hidden');
+    }
+
+    function closeConfirmModal(shouldReset) {
+      document.getElementById('modal-confirm').classList.add('hidden');
+      if (shouldReset) {
+        resetGameProgress();
+      }
+    }
+
+    function resetGameProgress() {
+      state.stars = 0;
+      state.currentStageIndex = 0;
+      state.currentQuestionIndex = 0;
+      state.completedStages = [false, false, false, false, false, false];
+      state.unlockedStages = [true, false, false, false, false, false];
+      state.answeredQuestions = {};
+      
+      saveState();
+      updateTopHeader();
+      switchView('welcome');
+    }
+
+
+
+    window.onload = function() {
+      loadState();
+      switchView('welcome');
+    };
+  </script>
+</body>
+</html>
